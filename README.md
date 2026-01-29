@@ -1,6 +1,8 @@
-# Healthcare Stroke Prediction - Feast Feature Store Documentatio
+# Healthcare Stroke Prediction - Feast Feature Store Documentation
 ## Architecture Overview
 This project implements a polyglot feature store architecture that unifies 5 heterogeneous data sources (PostgreSQL, MongoDB, MS SQL, MinIO S3, Spark) into a single Feast feature store for machine learning.
+
+(extended from environment in https://github.com/ThatoK3/healthcare-feast-project.git)
 
 ```bash 
 | Component     | Technology   | Purpose                                                 |
