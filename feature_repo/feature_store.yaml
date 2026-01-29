@@ -1,0 +1,25 @@
+project: healthcare_stroke_prediction
+
+# PostgreSQL-backed registry (requires feast[postgres])
+registry: 
+  registry_type: sql
+  path: postgresql://healthcare_user:HealthCare2024!@healthcare-postgres:5432/healthcare
+  cache_ttl_seconds: 60
+
+provider: local
+
+offline_store:
+  type: postgres
+  host: healthcare-postgres
+  port: 5432
+  database: healthcare
+  db_schema: feast_offline
+  user: healthcare_user
+  password: HealthCare2024!
+
+online_store:
+  type: redis
+  connection_string: healthcare-redis:6379,password=HealthCare2024!
+  key_ttl_seconds: 604800
+
+entity_key_serialization_version: 2

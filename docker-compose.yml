@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  feast-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.feast
+    container_name: healthcare-feast-ui
+    command: >
+      sh -c "
+        echo 'Waiting for services...' &&
+        sleep 10 &&
+        cd /feature_repo &&
+        echo 'Applying Feast definitions...' &&
+        feast apply &&
+        echo 'Starting Feast UI...' &&
+        feast ui -h 0.0.0.0 -p 8889
+      "
+    volumes:
+      - ./feature_repo:/feature_repo
+    working_dir: /feature_repo
+    environment:
+      # Feast Core
+      - FEAST_PROJECT_NAME=healthcare_stroke_prediction
+      - FEAST_ENTITY_KEY_TTL=86400
+      
+      # PostgreSQL (Registry + Offline Store)
+      - POSTGRES_HOST=healthcare-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=healthcare_user
+      - POSTGRES_PASSWORD=HealthCare2024!
+      - POSTGRES_DB=healthcare
+      
+      # Registry specific (PostgreSQL)
+      - FEAST_REGISTRY_URL=postgresql://healthcare_user:HealthCare2024!@healthcare-postgres:5432/healthcare
+      
+      # Redis (Online Store)
+      - REDIS_HOST=healthcare-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=HealthCare2024!
+      
+      # MinIO/S3 (File Sources)
+      - AWS_ACCESS_KEY_ID=healthcareadmin
+      - AWS_SECRET_ACCESS_KEY=HealthCare2024!
+      - AWS_DEFAULT_REGION=us-east-1
+      - S3_ENDPOINT_URL=http://healthcare-minio:9000
+      - FEAST_S3_ENDPOINT_URL=http://healthcare-minio:9000
+      
+      # MongoDB (for Spark ingestion)
+      - MONGO_HOST=healthcare-mongodb
+      - MONGO_PORT=27017
+      - MONGO_USER=healthcare_admin
+      - MONGO_PASSWORD=HealthCare2024!
+      - MONGO_DB=healthcare
+      
+      # MSSQL (for Spark ingestion)
+      - MSSQL_HOST=healthcare-mssql
+      - MSSQL_PORT=1433
+      - MSSQL_USER=sa
+      - MSSQL_PASSWORD=HealthCare2024!
+      - MSSQL_DB=healthcare
+      
+      # Spark
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+      
+    ports:
+      - "8889:8889"
+    networks:
+      - spark-network
+      - feast-network
+    depends_on: []
+    restart: unless-stopped
+
+  feast-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.feast
+    container_name: healthcare-feast-server
+    command: >
+      sh -c "
+        sleep 15 &&
+        cd /feature_repo &&
+        feast serve -h 0.0.0.0 -p 6566
+      "
+    volumes:
+      - ./feature_repo:/feature_repo
+    working_dir: /feature_repo
+    environment:
+      - FEAST_PROJECT_NAME=healthcare_stroke_prediction
+      - POSTGRES_HOST=healthcare-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=healthcare_user
+      - POSTGRES_PASSWORD=HealthCare2024!
+      - FEAST_REGISTRY_URL=postgresql://healthcare_user:HealthCare2024!@healthcare-postgres:5432/healthcare
+      - REDIS_HOST=healthcare-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=HealthCare2024!
+      - AWS_ACCESS_KEY_ID=healthcareadmin
+      - AWS_SECRET_ACCESS_KEY=HealthCare2024!
+      - S3_ENDPOINT_URL=http://healthcare-minio:9000
+    ports:
+      - "6566:6566"
+    networks:
+      - spark-network
+      - feast-network
+    profiles: ["server"]
+
+networks:
+  spark-network:
+    external: true
+    name: spark-jupyter-scala_spark-net
+  feast-network:
+    driver: bridge

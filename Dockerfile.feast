@@ -1,0 +1,20 @@
+FROM feastdev/feature-server:latest
+
+USER root
+
+# Install PostgreSQL support including contrib modules
+RUN pip install --no-cache-dir "feast[postgres]" && \
+    pip install --no-cache-dir psycopg2-binary
+
+# Install S3 support
+RUN pip install --no-cache-dir s3fs boto3
+
+# Install Redis
+RUN pip install --no-cache-dir redis
+
+USER default
+
+WORKDIR /feature_repo
+
+# Ensure the postgres offline store contrib is available
+RUN python -c "from feast.infra.offline_stores.contrib.postgres_offline_store.postgres_source import PostgreSQLSource; print('PostgreSQLSource import OK')"
