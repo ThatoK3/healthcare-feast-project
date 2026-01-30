@@ -4,7 +4,7 @@ This project implements a polyglot feature store architecture that unifies 5 het
 
 (extended from environment in https://github.com/ThatoK3/healthcare-feast-project.git)
 
-```bash 
+```markdown 
 | Component     | Technology   | Purpose                                                 |
 | --------------| ------------ | ------------------------------------------------------- |
 | Registry      | PostgreSQL   | Stores feature definitions and metadata                 |
